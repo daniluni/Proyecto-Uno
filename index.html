@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verde - Gestor de Finanzas Personales</title>
+    
+    <!-- Meta tags SEO -->
+    <meta name="description" content="Verde es un gestor de finanzas personales premium que te ayuda a controlar tus gastos, crear presupuestos y alcanzar tus metas de ahorro.">
+    <meta name="author" content="Daniluni">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Estilos -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@0.400.0/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <div class="logo-icon">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                    <span class="brand-name">Verde</span>
+                </div>
+                <button class="close-sidebar-btn" id="close-sidebar-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <button class="nav-btn active" data-view="dashboard" id="btn-nav-dashboard">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>Dashboard</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-btn" data-view="transactions" id="btn-nav-transactions">
+                            <i data-lucide="arrow-left-right"></i>
+                            <span>Transacciones</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-btn" data-view="budgets" id="btn-nav-budgets">
+                            <i data-lucide="pie-chart"></i>
+                            <span>Presupuestos</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-btn" data-view="goals" id="btn-nav-goals">
+                            <i data-lucide="target"></i>
+                            <span>Metas de Ahorro</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="data-actions">
+                    <button class="footer-btn" id="btn-export-data" title="Exportar Datos en JSON">
+                        <i data-lucide="download"></i>
+                        <span>Exportar</span>
+                    </button>
+                    <button class="footer-btn" id="btn-import-data" title="Importar Datos en JSON">
+                        <i data-lucide="upload"></i>
+                        <span>Importar</span>
+                    </button>
+                </div>
+                <button class="footer-btn reset-btn" id="btn-reset-data" title="Reiniciar todos los datos">
+                    <i data-lucide="refresh-cw"></i>
+                    <span>Restablecer</span>
+                </button>
+                <div class="user-badge">
+                    <div class="avatar">D</div>
+                    <div class="user-info">
+                        <span class="username">Daniluni</span>
+                        <span class="user-role">Premium Account</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle-btn" id="menu-toggle-btn">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <div class="greeting-section">
+                        <h1 id="greeting-text">¡Hola, Daniluni!</h1>
+                        <p class="current-date" id="current-date">Cargando fecha...</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="primary-btn pulse-effect" id="btn-quick-transaction">
+                        <i data-lucide="plus"></i>
+                        <span>Nueva Transacción</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Views -->
+            <main class="content-area">
+                
+                <!-- 1. DASHBOARD VIEW -->
+                <section class="view active" id="view-dashboard">
+                    <!-- Stat Cards Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card balance-card">
+                            <div class="stat-card-header">
+                                <span class="card-label">Balance Total</span>
+                                <div class="card-icon-wrapper">
+                                    <i data-lucide="wallet"></i>
+                                </div>
+                            </div>
+                            <h2 class="card-value" id="dashboard-balance">$0.00</h2>
+                            <div class="card-footer">
+                                <span class="trend-indicator text-success" id="balance-trend">
+                                    <i data-lucide="trending-up"></i>
+                                    <span>Presupuesto saludable</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card income-card">
+                            <div class="stat-card-header">
+                                <span class="card-label">Ingresos del Mes</span>
+                                <div class="card-icon-wrapper">
+                                    <i data-lucide="arrow-down-left"></i>
+                                </div>
+                            </div>
+                            <h2 class="card-value text-success" id="dashboard-incomes">$0.00</h2>
+                            <div class="card-footer">
+                                <span class="trend-indicator text-success" id="income-percentage-change">
+                                    <span id="income-percentage-value">0%</span> de ingresos del total histórico
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card expense-card">
+                            <div class="stat-card-header">
+                                <span class="card-label">Gastos del Mes</span>
+                                <div class="card-icon-wrapper">
+                                    <i data-lucide="arrow-up-right"></i>
+                                </div>
+                            </div>
+                            <h2 class="card-value text-danger" id="dashboard-expenses">$0.00</h2>
+                            <div class="card-footer">
+                                <span class="trend-indicator text-warning" id="expense-percentage-change">
+                                    <span id="expense-percentage-value">0%</span> de tasa de ahorro este mes
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Recent Activity -->
+                    <div class="dashboard-grid">
+                        <!-- Left: Charts -->
+                        <div class="chart-container-card card-glow">
+                            <div class="card-title-bar">
+                                <h3>Distribución de Gastos</h3>
+                                <span class="subtitle">Este mes</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="expenses-chart"></canvas>
+                                <div class="no-chart-data hidden" id="no-expenses-chart-data">
+                                    <i data-lucide="pie-chart" class="large-icon"></i>
+                                    <p>No hay datos de gastos este mes para graficar</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container-card card-glow">
+                            <div class="card-title-bar">
+                                <h3>Ingresos vs Gastos</h3>
+                                <span class="subtitle">Tendencia de los últimos meses</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="trend-chart"></canvas>
+                                <div class="no-chart-data hidden" id="no-trend-chart-data">
+                                    <i data-lucide="bar-chart-2" class="large-icon"></i>
+                                    <p>Inserta más transacciones para visualizar tendencias</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="recent-activity-card card-glow span-full">
+                            <div class="card-title-bar">
+                                <h3>Actividad Reciente</h3>
+                                <button class="link-btn" id="btn-view-all-transactions">Ver todas</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="recent-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Descripción</th>
+                                            <th>Categoría</th>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-transactions-tbody">
+                                        <!-- Generado por JavaScript -->
+                                        <tr class="empty-state">
+                                            <td colspan="5">
+                                                <div class="empty-state-content">
+                                                    <i data-lucide="file-text"></i>
+                                                    <p>No hay transacciones registradas todavía.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. TRANSACTIONS VIEW -->
+                <section class="view" id="view-transactions">
+                    <div class="view-header-row">
+                        <div class="view-title">
+                            <h2>Historial de Transacciones</h2>
+                            <p>Administra y visualiza el detalle de tus movimientos financieros</p>
+                        </div>
+                        <button class="primary-btn" id="btn-add-transaction">
+                            <i data-lucide="plus"></i>
+                            <span>Añadir Transacción</span>
+                        </button>
+                    </div>
+
+                    <!-- Filters Control Block -->
+                    <div class="filters-card card-glow">
+                        <div class="filters-grid">
+                            <div class="filter-group">
+                                <label for="filter-search">Buscar</label>
+                                <div class="search-input-wrapper">
+                                    <i data-lucide="search" class="search-icon"></i>
+                                    <input type="text" id="filter-search" placeholder="Buscar por descripción...">
+                                </div>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="filter-type">Tipo</label>
+                                <select id="filter-type">
+                                    <option value="all">Todos</option>
+                                    <option value="income">Ingresos</option>
+                                    <option value="expense">Gastos</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="filter-category">Categoría</label>
+                                <select id="filter-category">
+                                    <option value="all">Todas</option>
+                                    <!-- Dinámico por JS -->
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="filter-sort">Ordenar por</label>
+                                <select id="filter-sort">
+                                    <option value="date-desc">Fecha: Más recientes</option>
+                                    <option value="date-asc">Fecha: Más antiguas</option>
+                                    <option value="amount-desc">Monto: Mayor a menor</option>
+                                    <option value="amount-asc">Monto: Menor a mayor</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transactions List Card -->
+                    <div class="transactions-list-card card-glow">
+                        <div class="table-responsive">
+                            <table class="main-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Descripción</th>
+                                        <th>Categoría</th>
+                                        <th>Tipo</th>
+                                        <th>Monto</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-tbody">
+                                    <!-- Dinámico por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination-bar" id="pagination-bar">
+                            <!-- Dinámico por JS si es necesario -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. BUDGETS VIEW -->
+                <section class="view" id="view-budgets">
+                    <div class="view-header-row">
+                        <div class="view-title">
+                            <h2>Presupuestos Mensuales</h2>
+                            <p>Establece límites de gastos mensuales por categoría para evitar excesos</p>
+                        </div>
+                        <button class="primary-btn" id="btn-add-budget">
+                            <i data-lucide="sliders"></i>
+                            <span>Configurar Presupuesto</span>
+                        </button>
+                    </div>
+
+                    <!-- Budget Info Alert -->
+                    <div class="info-alert-box">
+                        <i data-lucide="info"></i>
+                        <p>Los presupuestos se calculan sobre el mes en curso. Cuando el consumo de una categoría supera el 80%, se indicará en naranja, y al superar el 100% se tornará rojo.</p>
+                    </div>
+
+                    <!-- Budgets Grid -->
+                    <div class="budgets-grid" id="budgets-grid-container">
+                        <!-- Dinámico por JS -->
+                    </div>
+                </section>
+
+                <!-- 4. GOALS VIEW -->
+                <section class="view" id="view-goals">
+                    <div class="view-header-row">
+                        <div class="view-title">
+                            <h2>Metas de Ahorro</h2>
+                            <p>Planifica tus metas financieras futuras y registra tu progreso</p>
+                        </div>
+                        <button class="primary-btn" id="btn-add-goal">
+                            <i data-lucide="plus"></i>
+                            <span>Nueva Meta</span>
+                        </button>
+                    </div>
+
+                    <!-- Goals Grid -->
+                    <div class="goals-grid" id="goals-grid-container">
+                        <!-- Dinámico por JS -->
+                    </div>
+                </section>
+                
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== MODALES ==================== -->
+
+    <!-- 1. MODAL TRANSACCIÓN (Crear/Editar) -->
+    <div class="modal-overlay" id="modal-transaction">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="transaction-modal-title">Nueva Transacción</h3>
+                <button class="modal-close-btn" data-close-modal="modal-transaction">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="form-transaction">
+                <input type="hidden" id="tx-id" value="">
+                
+                <div class="form-row flex-row">
+                    <div class="form-group flex-1">
+                        <label>Tipo</label>
+                        <div class="type-selector">
+                            <input type="radio" id="tx-type-expense" name="tx-type" value="expense" checked>
+                            <label for="tx-type-expense" class="type-label expense-label">
+                                <i data-lucide="trending-down"></i>
+                                Gasto
+                            </label>
+
+                            <input type="radio" id="tx-type-income" name="tx-type" value="income">
+                            <label for="tx-type-income" class="type-label income-label">
+                                <i data-lucide="trending-up"></i>
+                                Ingreso
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tx-amount">Monto ($)</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-currency">$</span>
+                            <input type="number" id="tx-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tx-desc">Descripción</label>
+                        <input type="text" id="tx-desc" placeholder="Ej. Compra de supermercado, Salario" required>
+                    </div>
+                </div>
+
+                <div class="form-row flex-row">
+                    <div class="form-group flex-1">
+                        <label for="tx-category">Categoría</label>
+                        <select id="tx-category" required>
+                            <!-- Rellenado por JS -->
+                        </select>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="tx-date">Fecha</label>
+                        <input type="date" id="tx-date" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tx-notes">Notas (Opcional)</label>
+                        <textarea id="tx-notes" rows="2" placeholder="Agrega detalles adicionales..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" data-close-modal="modal-transaction">Cancelar</button>
+                    <button type="submit" class="primary-btn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MODAL PRESUPUESTO (Establecer presupuesto) -->
+    <div class="modal-overlay" id="modal-budget">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Configurar Presupuesto Mensual</h3>
+                <button class="modal-close-btn" data-close-modal="modal-budget">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="form-budget">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget-category">Categoría</label>
+                        <select id="budget-category" required>
+                            <!-- Rellenado por JS -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget-amount">Límite Mensual ($)</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-currency">$</span>
+                            <input type="number" id="budget-amount" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" data-close-modal="modal-budget">Cancelar</button>
+                    <button type="submit" class="primary-btn">Establecer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. MODAL METAS (Crear/Editar Meta) -->
+    <div class="modal-overlay" id="modal-goal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="goal-modal-title">Nueva Meta de Ahorro</h3>
+                <button class="modal-close-btn" data-close-modal="modal-goal">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="form-goal">
+                <input type="hidden" id="goal-id" value="">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal-name">Nombre de la Meta</label>
+                        <input type="text" id="goal-name" placeholder="Ej. Fondo de Emergencia, Vacaciones" required>
+                    </div>
+                </div>
+
+                <div class="form-row flex-row">
+                    <div class="form-group flex-1">
+                        <label for="goal-target">Monto Objetivo ($)</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-currency">$</span>
+                            <input type="number" id="goal-target" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="goal-current">Ahorrado Inicial ($)</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-currency">$</span>
+                            <input type="number" id="goal-current" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="goal-date">Fecha Límite (Opcional)</label>
+                        <input type="date" id="goal-date">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" data-close-modal="modal-goal">Cancelar</button>
+                    <button type="submit" class="primary-btn">Guardar Meta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. MODAL APORTE A META -->
+    <div class="modal-overlay" id="modal-contribution">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Aportar Fondos a la Meta</h3>
+                <button class="modal-close-btn" data-close-modal="modal-contribution">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="form-contribution">
+                <input type="hidden" id="contribution-goal-id" value="">
+                
+                <div class="goal-info-card">
+                    <h4 id="contribution-goal-name">Nombre de la Meta</h4>
+                    <p id="contribution-goal-status">Progreso: $0 de $0</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contribution-amount">Monto del Aporte ($)</label>
+                        <div class="input-icon-wrapper">
+                            <span class="input-currency">$</span>
+                            <input type="number" id="contribution-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="contribution-sync-transaction" checked>
+                        <label for="contribution-sync-transaction">
+                            Deducir del balance general (crear una transacción automática de gasto en categoría "Ahorro")
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" data-close-modal="modal-contribution">Cancelar</button>
+                    <button type="submit" class="primary-btn">Realizar Aporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. MODAL IMPORTAR DATOS -->
+    <div class="modal-overlay" id="modal-import">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Importar Datos de Respaldo</h3>
+                <button class="modal-close-btn" data-close-modal="modal-import">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="form-import">
+                <div class="info-alert-box">
+                    <i data-lucide="alert-triangle"></i>
+                    <p>Al importar un archivo de respaldo (.json), **se sobrescribirán completamente** todos tus datos actuales de transacciones, presupuestos y metas de ahorro.</p>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="import-file">Seleccionar archivo JSON</label>
+                        <input type="file" id="import-file" accept=".json" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" data-close-modal="modal-import">Cancelar</button>
+                    <button type="submit" class="primary-btn">Importar y Sobrescribir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Importar la lógica JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
